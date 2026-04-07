@@ -23,8 +23,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -32,6 +32,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.core.component.DataComponents;
 
 import net.mcreator.powerwash.item.renderer.PowerwasherItemRenderer;
 import net.mcreator.powerwash.world.DirtyBlockManager;
@@ -130,15 +131,16 @@ public class PowerwasherItem extends Item implements GeoItem {
 	}
 
 	private static int getWater(ItemStack stack) {
-		CompoundTag tag = stack.getOrCreateTag();
-		if (!tag.contains(WATER_KEY)) {
-			tag.putInt(WATER_KEY, MAX_WATER);
+		CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+		if (!customData.copyTag().contains(WATER_KEY)) {
+			setWater(stack, MAX_WATER);
+			return MAX_WATER;
 		}
-		return tag.getInt(WATER_KEY);
+		return customData.copyTag().getInt(WATER_KEY);
 	}
 
 	private static void setWater(ItemStack stack, int value) {
-		stack.getOrCreateTag().putInt(WATER_KEY, Mth.clamp(value, 0, MAX_WATER));
+		CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt(WATER_KEY, Mth.clamp(value, 0, MAX_WATER)));
 	}
 
 	private static void consumeWater(ItemStack stack, int amount) {
