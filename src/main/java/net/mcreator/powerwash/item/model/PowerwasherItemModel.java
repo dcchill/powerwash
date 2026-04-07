@@ -9,16 +9,16 @@ import net.mcreator.powerwash.item.PowerwasherItem;
 public class PowerwasherItemModel extends GeoModel<PowerwasherItem> {
 	@Override
 	public ResourceLocation getAnimationResource(PowerwasherItem animatable) {
-		return ResourceLocation.parse("powerwash:animations/.animation.json");
+		return ResourceLocation.parse("powerwash:animations/powerwasher.animation.json");
 	}
 
 	@Override
 	public ResourceLocation getModelResource(PowerwasherItem animatable) {
-		return ResourceLocation.parse("powerwash:geo/");
+		return ResourceLocation.parse("powerwash:geo/powerwasher.geo.json");
 	}
 
 	@Override
 	public ResourceLocation getTextureResource(PowerwasherItem animatable) {
-		return ResourceLocation.parse("powerwash:textures/item/minecraft:amethyst_shard.png");
+		return ResourceLocation.parse("powerwash:textures/item/powerwash_texture.png");
 	}
 }

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir *)",
+      "Bash(gradlew.bat *)",
+      "Bash(del *)",
+      "Bash(select-string *)"
+    ]
+  },
+  "$version": 3
+}

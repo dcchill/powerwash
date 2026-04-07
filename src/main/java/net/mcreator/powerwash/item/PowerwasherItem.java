@@ -23,7 +23,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
@@ -33,15 +32,17 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import net.mcreator.powerwash.PowerwashMod;
 import net.mcreator.powerwash.item.renderer.PowerwasherItemRenderer;
+import net.mcreator.powerwash.init.PowerwashModDataComponents;
 import net.mcreator.powerwash.world.DirtyBlockManager;
 
 import java.util.function.Consumer;
 
 public class PowerwasherItem extends Item implements GeoItem {
-	private static final String WATER_KEY = "Water";
-	private static final int MAX_WATER = 1000;
+	private static final int MAX_WATER = 10000;
 	private static final int WATER_PER_TICK = 1;
+	
 	private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 	public String animationprocedure = "empty";
 
@@ -52,18 +53,30 @@ public class PowerwasherItem extends Item implements GeoItem {
 	@Override
 	public InteractionResult useOn(UseOnContext context) {
 		Player player = context.getPlayer();
+		PowerwashMod.LOGGER.info("[Powerwasher] useOn called. Shift: {}", player != null && player.isShiftKeyDown());
+		
 		if (player == null || !player.isShiftKeyDown()) {
 			return InteractionResult.PASS;
 		}
 
 		ItemStack stack = context.getItemInHand();
 		Level level = context.getLevel();
-		BlockPos pos = context.getClickedPos();
-		FluidState fluidState = level.getFluidState(pos);
-		if (fluidState.is(FluidTags.WATER) && fluidState.isSource()) {
+		BlockPos hitPos = context.getClickedPos();
+		FluidState fluidState = level.getFluidState(hitPos);
+
+		// If hit pos is empty (e.g., hit block under water), check the clicked face direction
+		if (fluidState.isEmpty()) {
+			hitPos = context.getClickedPos().relative(context.getClickedFace());
+			fluidState = level.getFluidState(hitPos);
+		}
+
+		PowerwashMod.LOGGER.info("[Powerwasher] Refill attempt at {}. Fluid: {}", hitPos, fluidState.getType());
+
+		if (fluidState.is(FluidTags.WATER)) {
 			if (!level.isClientSide()) {
-				level.removeBlock(pos, false);
+				level.setBlock(hitPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
 				setWater(stack, MAX_WATER);
+				PowerwashMod.LOGGER.info("[Powerwasher] Refilled successfully!");
 			}
 			return InteractionResult.sidedSuccess(level.isClientSide());
 		}
@@ -101,44 +114,31 @@ public class PowerwasherItem extends Item implements GeoItem {
 		Vec3 end = eye.add(look.scale(8.0));
 		BlockHitResult hit = level.clip(new ClipContext(eye, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, livingEntity));
 
-		spawnSpray(level, eye, look, hit.getLocation());
+		spawnSpray(level, hit.getLocation());
 
 		if (!level.isClientSide() && hit.getType() == HitResult.Type.BLOCK) {
-			boolean cleaned = DirtyBlockManager.cleanPixel(hit.getBlockPos(), hit.getDirection(), hit.getLocation());
+			ServerLevel serverLevel = (ServerLevel) level;
+			boolean cleaned = DirtyBlockManager.cleanPixel(hit.getBlockPos(), hit.getDirection(), hit.getLocation(), serverLevel);
 			if (cleaned || remainingUseDuration % 2 == 0) {
 				consumeWater(stack, WATER_PER_TICK);
 			}
 		}
 	}
 
-	private static void spawnSpray(Level level, Vec3 start, Vec3 direction, Vec3 hitLocation) {
-		Vec3 delta = hitLocation.subtract(start);
-		double length = delta.length();
-		if (length <= 0.001) {
-			return;
-		}
-		Vec3 normalized = delta.normalize();
-		for (int i = 0; i < 10; i++) {
-			double progress = (i + 1) / 10.0;
-			Vec3 point = start.add(normalized.scale(length * progress));
-			if (level instanceof ServerLevel serverLevel) {
-				serverLevel.sendParticles(ParticleTypes.SPLASH, point.x, point.y, point.z, 1, 0.03, 0.03, 0.03, 0.01);
-			} else {
-				level.addParticle(ParticleTypes.SPLASH, point.x, point.y, point.z, direction.x * 0.02, direction.y * 0.02, direction.z * 0.02);
-			}
+	private static void spawnSpray(Level level, Vec3 hitLocation) {
+		if (level instanceof ServerLevel serverLevel) {
+			serverLevel.sendParticles(ParticleTypes.SPLASH, hitLocation.x, hitLocation.y, hitLocation.z, 5, 0.1, 0.1, 0.1, 0.05);
+		} else {
+			level.addParticle(ParticleTypes.SPLASH, hitLocation.x, hitLocation.y, hitLocation.z, 0, 0.1, 0);
 		}
 	}
 
 	private static int getWater(ItemStack stack) {
-		CompoundTag tag = stack.getOrCreateTag();
-		if (!tag.contains(WATER_KEY)) {
-			tag.putInt(WATER_KEY, MAX_WATER);
-		}
-		return tag.getInt(WATER_KEY);
+		return stack.getOrDefault(PowerwashModDataComponents.WATER.get(), MAX_WATER);
 	}
 
 	private static void setWater(ItemStack stack, int value) {
-		stack.getOrCreateTag().putInt(WATER_KEY, Mth.clamp(value, 0, MAX_WATER));
+		stack.set(PowerwashModDataComponents.WATER.get(), Mth.clamp(value, 0, MAX_WATER));
 	}
 
 	private static void consumeWater(ItemStack stack, int amount) {
@@ -181,7 +181,7 @@ public class PowerwasherItem extends Item implements GeoItem {
 
 	private PlayState idlePredicate(AnimationState event) {
 		if (this.animationprocedure.equals("empty")) {
-			event.getController().setAnimation(RawAnimation.begin().thenLoop(""));
+			event.getController().setAnimation(RawAnimation.begin().thenLoop("idle"));
 			return PlayState.CONTINUE;
 		}
 		return PlayState.STOP;

@@ -45,12 +45,16 @@ public class PowerwashMod {
 		// End of user code block mod constructor
 		NeoForge.EVENT_BUS.register(this);
 		modEventBus.addListener(this::registerNetworking);
-
 		PowerwashModBlocks.REGISTRY.register(modEventBus);
-
 		PowerwashModItems.REGISTRY.register(modEventBus);
-
 		// Start of user code block mod init
+		net.mcreator.powerwash.init.PowerwashModDataComponents.REGISTRY.register(modEventBus);
+		modEventBus.addListener((net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent event) -> {
+			event.registrar(MODID).playToClient(net.mcreator.powerwash.network.DirtyBlockSyncPayload.TYPE, net.mcreator.powerwash.network.DirtyBlockSyncPayload.STREAM_CODEC,
+					(payload, context) -> context.enqueueWork(() -> net.mcreator.powerwash.network.DirtyBlockSyncPayload.handle(payload)));
+			event.registrar(MODID).playToClient(net.mcreator.powerwash.network.GrimeClearPayload.TYPE, net.mcreator.powerwash.network.GrimeClearPayload.STREAM_CODEC,
+					(payload, context) -> context.enqueueWork(() -> net.mcreator.powerwash.network.GrimeClearPayload.handle(payload)));
+		});
 		// End of user code block mod init
 	}
 

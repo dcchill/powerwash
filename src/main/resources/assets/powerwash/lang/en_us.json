@@ -1,4 +1,5 @@
 {
   "item.powerwash.powerwasher": "Powerwasher",
-  "block.powerwash.grime": "Grime"
+  "block.powerwash.grime": "Grime",
+  "item.powerwash.powerwasher_gecko_test": "Powerwasher Gecko Test"
 }
