@@ -1,0 +1,79 @@
+{
+  "mod_elements": [
+    {
+      "name": "Powerwasher",
+      "type": "animateditem",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "powerwasher",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/powerwash/item/renderer/PowerwasherItemRenderer.java",
+          "src/main/resources/assets/powerwash/models/item/powerwasher.json",
+          "src/main/java/net/mcreator/powerwash/item/model/PowerwasherItemModel.java",
+          "src/main/java/net/mcreator/powerwash/item/PowerwasherItem.java"
+        ]
+      }
+    },
+    {
+      "name": "Grime",
+      "type": "block",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "grime",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/powerwash/models/block/grime.json",
+          "src/main/resources/assets/powerwash/models/item/grime.json",
+          "src/main/resources/data/powerwash/loot_table/blocks/grime.json",
+          "src/main/java/net/mcreator/powerwash/block/GrimeBlock.java",
+          "src/main/resources/assets/powerwash/blockstates/grime.json"
+        ]
+      }
+    }
+  ],
+  "variable_elements": [],
+  "sound_elements": [],
+  "tag_elements": {},
+  "tab_element_order": {},
+  "language_map": {
+    "en_us": {
+      "item.powerwash.powerwasher": "Powerwasher",
+      "block.powerwash.grime": "Grime"
+    }
+  },
+  "metadata": {
+    "files": [
+      "src/main/java/net/mcreator/powerwash/PowerwashMod.java",
+      "src/main/resources/META-INF/neoforge.mods.toml",
+      "src/main/resources/pack.mcmeta",
+      "src/main/java/net/mcreator/powerwash/utils/AnimUtils.java",
+      "src/main/java/net/mcreator/powerwash/init/ItemAnimationFactory.java",
+      "src/main/java/net/mcreator/powerwash/init/PowerwashModBlocks.java",
+      "src/main/java/net/mcreator/powerwash/init/PowerwashModItems.java"
+    ]
+  },
+  "foldersRoot": {
+    "name": "~",
+    "children": []
+  },
+  "workspaceSettings": {
+    "modid": "powerwash",
+    "modName": "Powerwash",
+    "version": "1.0.0",
+    "author": "MCreator",
+    "websiteURL": "https://mcreator.net",
+    "license": "Not specified",
+    "serverSideOnly": false,
+    "requiredMods": [],
+    "dependencies": [],
+    "dependants": [],
+    "mcreatorDependencies": [
+      "geckolib"
+    ],
+    "currentGenerator": "neoforge-1.21.1",
+    "credits": "Created using mod maker MCreator - https://mcreator.net/about",
+    "modElementsPackage": "net.mcreator.powerwash"
+  },
+  "mcreatorVersion": 202500228610
+}

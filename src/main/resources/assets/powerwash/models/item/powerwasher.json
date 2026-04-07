@@ -1,0 +1,6 @@
+{
+  "parent": "powerwash:displaysettings/",
+  "textures": {
+    "layer0": "powerwash:item/minecraft:amethyst_shard"
+  }
+}
