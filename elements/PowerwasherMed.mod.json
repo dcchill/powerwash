@@ -1,0 +1,54 @@
+{
+  "_fv": 79,
+  "_type": "animateditem",
+  "definition": {
+    "renderType": 0,
+    "texture": "powerwash_texture",
+    "name": "Powerwasher",
+    "idle": "idle",
+    "rarity": "COMMON",
+    "displaySettings": "powerwasher.json",
+    "leftArm": "l_arm",
+    "rightArm": "r_arm",
+    "creativeTabs": [
+      {
+        "value": "CUSTOM:Powerwash"
+      }
+    ],
+    "firstPersonArms": true,
+    "stackSize": 1,
+    "enchantability": 0,
+    "useDuration": 0,
+    "toolType": 1.0,
+    "damageCount": 0,
+    "recipeRemainder": {
+      "value": ""
+    },
+    "destroyAnyBlock": false,
+    "immuneToFire": false,
+    "stayInGridWhenCrafting": false,
+    "enableArmPose": false,
+    "damageOnCrafting": false,
+    "enableMeleeDamage": false,
+    "damageVsEntity": 0.0,
+    "specialInformation": {
+      "fixedValue": []
+    },
+    "hasGlow": false,
+    "guiBoundTo": "<NONE>",
+    "inventorySize": 9,
+    "inventoryStackSize": 64,
+    "isFood": false,
+    "nutritionalValue": 4,
+    "saturation": 0.3,
+    "eatResultItem": {
+      "value": ""
+    },
+    "isMeat": false,
+    "isAlwaysEdible": false,
+    "animation": "none",
+    "normal": "powerwashermed.geo.json",
+    "armPoseList": [],
+    "disableSwing": false
+  }
+}

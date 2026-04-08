@@ -4,7 +4,8 @@
       "Bash(mkdir *)",
       "Bash(gradlew.bat *)",
       "Bash(del *)",
-      "Bash(select-string *)"
+      "Bash(select-string *)",
+      "Bash(findstr *)"
     ]
   },
   "$version": 3

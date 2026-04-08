@@ -8,6 +8,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record GrimeClearPayload(long blockPos) implements CustomPacketPayload {
 
@@ -36,7 +37,11 @@ public record GrimeClearPayload(long blockPos) implements CustomPacketPayload {
 		return BlockPos.of(blockPos);
 	}
 
-	public static void handle(GrimeClearPayload payload) {
-		ClientDirtyBlockCache.removeBlock(payload.getBlockPos());
+	public static void handle(GrimeClearPayload payload, IPayloadContext context) {
+		context.enqueueWork(() -> {
+			if (context.player().level().isClientSide()) {
+				ClientDirtyBlockCache.removeBlock(payload.getBlockPos());
+			}
+		});
 	}
 }

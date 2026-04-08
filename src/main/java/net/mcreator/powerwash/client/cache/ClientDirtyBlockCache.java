@@ -19,6 +19,12 @@ public final class ClientDirtyBlockCache {
 		DIRTY_BLOCKS.put(pos.asLong(), DirtyBlockState.full());
 	}
 
+	public static void setDirtiestFace(BlockPos pos, Direction face) {
+		DirtyBlockState state = DIRTY_BLOCKS.computeIfAbsent(pos.asLong(), k -> new DirtyBlockState());
+		state.setDirtiestFace(face);
+		net.mcreator.powerwash.PowerwashMod.LOGGER.info("[ClientDirtyBlockCache] setDirtiestFace: pos={}, face={}, cacheSize={}", pos, face, DIRTY_BLOCKS.size());
+	}
+
 	public static void cleanPixel(BlockPos pos, Direction face, int pixelIndex) {
 		DirtyBlockState state = DIRTY_BLOCKS.get(pos.asLong());
 		if (state == null) return;
@@ -56,6 +62,13 @@ public final class ClientDirtyBlockCache {
 				}
 			}
 			return state;
+		}
+
+		public void setDirtiestFace(Direction face) {
+			boolean[] pixels = facePixels[face.get3DDataValue()];
+			for (int i = 0; i < PIXEL_COUNT; i++) {
+				pixels[i] = true;
+			}
 		}
 
 		public void clean(Direction face, int pixelIndex) {

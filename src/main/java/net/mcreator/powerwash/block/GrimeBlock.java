@@ -56,6 +56,7 @@ public class GrimeBlock extends Block {
 					if (dot > bestDot) {
 						bestDot = dot;
 						targetPos = neighbor;
+						// From the target's perspective, the face toward the grime is the opposite of 'dir'
 						clickedFace = dir.getOpposite();
 					}
 				}

@@ -30,6 +30,46 @@
           "src/main/resources/assets/powerwash/blockstates/grime.json"
         ]
       }
+    },
+    {
+      "name": "Powerwash",
+      "type": "tab",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "powerwash",
+      "metadata": {
+        "files": []
+      }
+    },
+    {
+      "name": "PowerwasherWide",
+      "type": "animateditem",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "powerwasher_wide",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/powerwash/item/PowerwasherWideItem.java",
+          "src/main/java/net/mcreator/powerwash/item/model/PowerwasherWideItemModel.java",
+          "src/main/resources/assets/powerwash/models/item/powerwasher_wide.json",
+          "src/main/java/net/mcreator/powerwash/item/renderer/PowerwasherWideItemRenderer.java"
+        ]
+      }
+    },
+    {
+      "name": "PowerwasherMed",
+      "type": "animateditem",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "powerwasher_med",
+      "metadata": {
+        "files": [
+          "src/main/java/net/mcreator/powerwash/item/renderer/PowerwasherMedItemRenderer.java",
+          "src/main/java/net/mcreator/powerwash/item/model/PowerwasherMedItemModel.java",
+          "src/main/java/net/mcreator/powerwash/item/PowerwasherMedItem.java",
+          "src/main/resources/assets/powerwash/models/item/powerwasher_med.json"
+        ]
+      }
     }
   ],
   "variable_elements": [],
@@ -40,7 +80,10 @@
     "en_us": {
       "item.powerwash.powerwasher": "Powerwasher",
       "block.powerwash.grime": "Grime",
-      "item.powerwash.powerwasher_gecko_test": "Powerwasher Gecko Test"
+      "item.powerwash.powerwasher_gecko_test": "Powerwasher Gecko Test",
+      "item_group.powerwash.powerwash": "Powerwash",
+      "item.powerwash.powerwasher_wide": "Powerwasher",
+      "item.powerwash.powerwasher_med": "Powerwasher"
     }
   },
   "metadata": {
@@ -48,6 +91,7 @@
       "src/main/java/net/mcreator/powerwash/PowerwashMod.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
       "src/main/resources/pack.mcmeta",
+      "src/main/java/net/mcreator/powerwash/init/PowerwashModTabs.java",
       "src/main/java/net/mcreator/powerwash/utils/AnimUtils.java",
       "src/main/java/net/mcreator/powerwash/init/ItemAnimationFactory.java",
       "src/main/java/net/mcreator/powerwash/init/PowerwashModBlocks.java",
@@ -61,7 +105,7 @@
   "workspaceSettings": {
     "modid": "powerwash",
     "modName": "Powerwash",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "author": "MCreator",
     "websiteURL": "https://mcreator.net",
     "license": "Not specified",

@@ -9,6 +9,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record DirtyBlockSyncPayload(long blockPos, byte face, short pixelIndex, boolean clean) implements CustomPacketPayload {
 
@@ -44,11 +45,24 @@ public record DirtyBlockSyncPayload(long blockPos, byte face, short pixelIndex, 
 		return Direction.from3DDataValue(face);
 	}
 
-	public static void handle(DirtyBlockSyncPayload payload) {
-		if (payload.clean()) {
-			ClientDirtyBlockCache.cleanPixel(payload.getBlockPos(), payload.getFace(), payload.pixelIndex());
-		} else {
-			ClientDirtyBlockCache.setDirtyPixel(payload.getBlockPos(), payload.getFace(), payload.pixelIndex());
-		}
+	public static void handle(DirtyBlockSyncPayload payload, IPayloadContext context) {
+		context.enqueueWork(() -> {
+			if (context.player() != null && context.player().level().isClientSide()) {
+				PowerwashMod.LOGGER.info("[DirtyBlockSyncPayload] Received on client: pos={}, face={}, pixelIndex={}, clean={}", 
+					payload.getBlockPos(), payload.getFace(), payload.pixelIndex(), payload.clean());
+				if (payload.clean()) {
+					ClientDirtyBlockCache.cleanPixel(payload.getBlockPos(), payload.getFace(), payload.pixelIndex());
+				} else if (payload.pixelIndex() == -1) {
+					// Full face sync - mark all pixels dirty on the target face
+					ClientDirtyBlockCache.setDirtiestFace(payload.getBlockPos(), payload.getFace());
+					PowerwashMod.LOGGER.info("[DirtyBlockSyncPayload] Set dirtiest face {} for block {}", payload.getFace(), payload.getBlockPos());
+				} else {
+					ClientDirtyBlockCache.setDirtyPixel(payload.getBlockPos(), payload.getFace(), payload.pixelIndex());
+				}
+			} else {
+				PowerwashMod.LOGGER.warn("[DirtyBlockSyncPayload] Ignored on server side or null player. isClientSide={}", 
+					context.player() != null ? context.player().level().isClientSide() : "null");
+			}
+		});
 	}
 }

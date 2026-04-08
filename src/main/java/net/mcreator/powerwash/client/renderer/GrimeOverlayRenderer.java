@@ -50,6 +50,8 @@ public class GrimeOverlayRenderer {
 		if (dirtyBlocks.isEmpty()) {
 			if (renderCallCount % 200 == 0 && lastDirtyCount != 0) {
 				PowerwashMod.LOGGER.info("[GrimeOverlay] No dirty blocks in cache (tick {}).", renderCallCount);
+			} else if (renderCallCount <= 10) {
+				PowerwashMod.LOGGER.debug("[GrimeOverlay] Tick {}: dirty blocks cache is empty", renderCallCount);
 			}
 			lastDirtyCount = 0;
 			return;
@@ -57,7 +59,7 @@ public class GrimeOverlayRenderer {
 
 		if (dirtyBlocks.size() != lastDirtyCount) {
 			lastDirtyCount = dirtyBlocks.size();
-			PowerwashMod.LOGGER.info("[GrimeOverlay] Rendering {} dirty blocks (tick {}).", dirtyBlocks.size(), renderCallCount);
+			PowerwashMod.LOGGER.info("[GrimeOverlay] Rendering {} dirty blocks (tick {}). Keys: {}", dirtyBlocks.size(), renderCallCount, dirtyBlocks.keySet());
 		}
 
 		Camera camera = event.getCamera();
@@ -80,9 +82,20 @@ public class GrimeOverlayRenderer {
 		double camZ = camera.getPosition().z;
 
 		int quadsDrawn = 0;
+		double maxRenderDistSq = 64.0 * 64.0; // 64 block render distance squared
 
 		for (var entry : dirtyBlocks.entrySet()) {
 			BlockPos pos = BlockPos.of(entry.getKey());
+			
+			// Distance culling - skip blocks too far from camera
+			double dx = pos.getX() - camX;
+			double dy = pos.getY() - camY;
+			double dz = pos.getZ() - camZ;
+			double distSq = dx * dx + dy * dy + dz * dz;
+			if (distSq > maxRenderDistSq) {
+				continue;
+			}
+			
 			ClientDirtyBlockCache.DirtyBlockState state = entry.getValue();
 
 			AABB blockBox = new AABB(pos);

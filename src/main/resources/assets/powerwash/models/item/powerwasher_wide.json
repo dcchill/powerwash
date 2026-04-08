@@ -1,0 +1,6 @@
+{
+  "parent": "powerwash:displaysettings/powerwasher",
+  "textures": {
+    "layer0": "powerwash:item/powerwash_texture"
+  }
+}

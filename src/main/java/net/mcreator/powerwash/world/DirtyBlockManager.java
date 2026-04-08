@@ -51,6 +51,21 @@ public final class DirtyBlockManager {
 		return changed;
 	}
 
+	public static boolean cleanPixelByIndex(BlockPos pos, Direction face, int pixelIndex, ServerLevel level) {
+		DirtyBlockState state = DIRTY_BLOCKS.get(pos.asLong());
+		if (state == null) {
+			return false;
+		}
+		boolean changed = state.clean(face, pixelIndex);
+		if (changed) {
+			syncPixel(pos, face, (short) pixelIndex, level);
+		}
+		if (state.isClean()) {
+			DIRTY_BLOCKS.remove(pos.asLong());
+		}
+		return changed;
+	}
+
 	public static boolean cleanPixel(BlockPos pos, Direction face, Vec3 hitLocation, ServerLevel level) {
 		DirtyBlockState state = DIRTY_BLOCKS.get(pos.asLong());
 		if (state == null) {
@@ -98,13 +113,16 @@ public final class DirtyBlockManager {
 	}
 
 	private static void syncFullBlock(BlockPos pos, Direction clickedFace, ServerLevel level) {
+		int playerCount = 0;
 		for (ServerPlayer player : level.players()) {
 			if (player.blockPosition().distSqr(pos) < 256.0) {
-				for (int i = 0; i < PIXEL_COUNT; i++) {
-					player.connection.send(new DirtyBlockSyncPayload(pos.asLong(), (byte) clickedFace.get3DDataValue(), (short) i, false));
-				}
+				// Send full block sync as a single operation: mark all pixels dirty on the target face
+				// Client will handle filling all pixels locally without individual packets
+				player.connection.send(new DirtyBlockSyncPayload(pos.asLong(), (byte) clickedFace.get3DDataValue(), (short) -1, false));
+				playerCount++;
 			}
 		}
+		PowerwashMod.LOGGER.info("[DirtyBlockManager] syncFullBlock sent to {} players for pos={}, face={}", playerCount, pos, clickedFace);
 	}
 
 	private static final class DirtyBlockState {

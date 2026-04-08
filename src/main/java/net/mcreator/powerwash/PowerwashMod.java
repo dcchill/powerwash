@@ -25,7 +25,9 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.core.registries.BuiltInRegistries;
 
+import net.mcreator.powerwash.init.PowerwashModTabs;
 import net.mcreator.powerwash.init.PowerwashModItems;
+import net.mcreator.powerwash.init.PowerwashModDataComponents;
 import net.mcreator.powerwash.init.PowerwashModBlocks;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -45,12 +47,14 @@ public class PowerwashMod {
 		// End of user code block mod constructor
 		NeoForge.EVENT_BUS.register(this);
 		modEventBus.addListener(this::registerNetworking);
-
 		PowerwashModBlocks.REGISTRY.register(modEventBus);
-
 		PowerwashModItems.REGISTRY.register(modEventBus);
-
+		PowerwashModTabs.REGISTRY.register(modEventBus);
 		// Start of user code block mod init
+		PowerwashModDataComponents.REGISTRY.register(modEventBus);
+		// Register network payloads
+		addNetworkMessage(net.mcreator.powerwash.network.DirtyBlockSyncPayload.TYPE, net.mcreator.powerwash.network.DirtyBlockSyncPayload.STREAM_CODEC, net.mcreator.powerwash.network.DirtyBlockSyncPayload::handle);
+		addNetworkMessage(net.mcreator.powerwash.network.GrimeClearPayload.TYPE, net.mcreator.powerwash.network.GrimeClearPayload.STREAM_CODEC, net.mcreator.powerwash.network.GrimeClearPayload::handle);
 		// End of user code block mod init
 	}
 

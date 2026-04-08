@@ -11,6 +11,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.BlockItem;
 
+import net.mcreator.powerwash.item.PowerwasherWideItem;
+import net.mcreator.powerwash.item.PowerwasherMedItem;
 import net.mcreator.powerwash.item.PowerwasherItem;
 import net.mcreator.powerwash.PowerwashMod;
 
@@ -18,6 +20,8 @@ public class PowerwashModItems {
 	public static final DeferredRegister.Items REGISTRY = DeferredRegister.createItems(PowerwashMod.MODID);
 	public static final DeferredItem<Item> POWERWASHER = REGISTRY.register("powerwasher", PowerwasherItem::new);
 	public static final DeferredItem<Item> GRIME = block(PowerwashModBlocks.GRIME);
+	public static final DeferredItem<Item> POWERWASHER_WIDE = REGISTRY.register("powerwasher_wide", PowerwasherWideItem::new);
+	public static final DeferredItem<Item> POWERWASHER_MED = REGISTRY.register("powerwasher_med", PowerwasherMedItem::new);
 
 	// Start of user code block custom items
 	// End of user code block custom items

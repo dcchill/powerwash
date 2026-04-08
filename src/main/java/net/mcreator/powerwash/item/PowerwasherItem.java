@@ -12,6 +12,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
@@ -40,10 +41,20 @@ import net.mcreator.powerwash.world.DirtyBlockManager;
 import java.util.function.Consumer;
 
 public class PowerwasherItem extends Item implements GeoItem {
-	private static final int MAX_WATER = 10000;
-	private static final int WATER_PER_TICK = 1;
-	
+	protected static final int MAX_WATER = 10000;
+	protected static final int WATER_PER_TICK = 1;
+	protected static final int MAX_RANGE = 8;
+	protected static final int SPRAY_WIDTH = 2;
+	protected static final int SPRAY_HEIGHT = 2;
+
 	private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
+	// Overridable getters for subclassing
+	protected int getMaxWater() { return MAX_WATER; }
+	protected int getWaterPerTick() { return WATER_PER_TICK; }
+	protected int getMaxRange() { return MAX_RANGE; }
+	protected int getSprayWidth() { return SPRAY_WIDTH; }
+	protected int getSprayHeight() { return SPRAY_HEIGHT; }
 	public String animationprocedure = "empty";
 
 	public PowerwasherItem() {
@@ -70,12 +81,10 @@ public class PowerwasherItem extends Item implements GeoItem {
 			fluidState = level.getFluidState(hitPos);
 		}
 
-		PowerwashMod.LOGGER.info("[Powerwasher] Refill attempt at {}. Fluid: {}", hitPos, fluidState.getType());
-
 		if (fluidState.is(FluidTags.WATER)) {
 			if (!level.isClientSide()) {
 				level.setBlock(hitPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
-				setWater(stack, MAX_WATER);
+				setWater(stack, getMaxWater());
 				PowerwashMod.LOGGER.info("[Powerwasher] Refilled successfully!");
 			}
 			return InteractionResult.sidedSuccess(level.isClientSide());
@@ -111,18 +120,71 @@ public class PowerwasherItem extends Item implements GeoItem {
 
 		Vec3 eye = livingEntity.getEyePosition();
 		Vec3 look = livingEntity.getLookAngle();
-		Vec3 end = eye.add(look.scale(8.0));
+		Vec3 end = eye.add(look.scale(getMaxRange()));
 		BlockHitResult hit = level.clip(new ClipContext(eye, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, livingEntity));
 
 		spawnSpray(level, hit.getLocation());
 
 		if (!level.isClientSide() && hit.getType() == HitResult.Type.BLOCK) {
 			ServerLevel serverLevel = (ServerLevel) level;
-			boolean cleaned = DirtyBlockManager.cleanPixel(hit.getBlockPos(), hit.getDirection(), hit.getLocation(), serverLevel);
-			if (cleaned || remainingUseDuration % 2 == 0) {
-				consumeWater(stack, WATER_PER_TICK);
+			boolean anyCleaned = cleanArea(hit, serverLevel);
+			if (anyCleaned || remainingUseDuration % 2 == 0) {
+				consumeWater(stack, getWaterPerTick());
 			}
 		}
+	}
+
+	protected boolean cleanArea(BlockHitResult hit, ServerLevel serverLevel) {
+		BlockPos pos = hit.getBlockPos();
+		Direction face = hit.getDirection();
+		Vec3 hitLocation = hit.getLocation();
+		int width = getSprayWidth();
+		int height = getSprayHeight();
+		boolean anyCleaned = false;
+
+		// Calculate the starting pixel from the hit location
+		int startPixelX;
+		int startPixelY;
+
+		double localX = Mth.clamp(hitLocation.x - pos.getX(), 0.0, 0.9999);
+		double localY = Mth.clamp(hitLocation.y - pos.getY(), 0.0, 0.9999);
+		double localZ = Mth.clamp(hitLocation.z - pos.getZ(), 0.0, 0.9999);
+
+		switch (face) {
+			case UP, DOWN -> {
+				startPixelX = (int) (localX * 16);
+				startPixelY = (int) (localZ * 16);
+			}
+			case NORTH, SOUTH -> {
+				startPixelX = (int) (localX * 16);
+				startPixelY = (int) (localY * 16);
+			}
+			case WEST, EAST -> {
+				startPixelX = (int) (localZ * 16);
+				startPixelY = (int) (localY * 16);
+			}
+			default -> {
+				startPixelX = 0;
+				startPixelY = 0;
+			}
+		}
+
+		// Center the spray around the hit point
+		int halfW = width / 2;
+		int halfH = height / 2;
+
+		for (int dy = 0; dy < height; dy++) {
+			for (int dx = 0; dx < width; dx++) {
+				int px = Mth.clamp(startPixelX - halfW + dx, 0, 15);
+				int py = Mth.clamp(startPixelY - halfH + dy, 0, 15);
+				int pixelIndex = py * 16 + px;
+				if (DirtyBlockManager.cleanPixelByIndex(pos, face, pixelIndex, serverLevel)) {
+					anyCleaned = true;
+				}
+			}
+		}
+
+		return anyCleaned;
 	}
 
 	private static void spawnSpray(Level level, Vec3 hitLocation) {
@@ -133,26 +195,26 @@ public class PowerwasherItem extends Item implements GeoItem {
 		}
 	}
 
-	private static int getWater(ItemStack stack) {
-		return stack.getOrDefault(PowerwashModDataComponents.WATER.get(), MAX_WATER);
+	private int getWater(ItemStack stack) {
+		return stack.getOrDefault(PowerwashModDataComponents.WATER.get(), getMaxWater());
 	}
 
-	private static void setWater(ItemStack stack, int value) {
-		stack.set(PowerwashModDataComponents.WATER.get(), Mth.clamp(value, 0, MAX_WATER));
+	private void setWater(ItemStack stack, int value) {
+		stack.set(PowerwashModDataComponents.WATER.get(), Mth.clamp(value, 0, getMaxWater()));
 	}
 
-	private static void consumeWater(ItemStack stack, int amount) {
+	private void consumeWater(ItemStack stack, int amount) {
 		setWater(stack, getWater(stack) - amount);
 	}
 
 	@Override
 	public boolean isBarVisible(ItemStack stack) {
-		return getWater(stack) < MAX_WATER;
+		return getWater(stack) < getMaxWater();
 	}
 
 	@Override
 	public int getBarWidth(ItemStack stack) {
-		return Math.round(13.0F * ((float) getWater(stack) / (float) MAX_WATER));
+		return Math.round(13.0F * ((float) getWater(stack) / (float) getMaxWater()));
 	}
 
 	@Override
